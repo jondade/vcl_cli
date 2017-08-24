@@ -68,5 +68,10 @@ module VCL
 
       return diff
     end
+
+    def self.make_dot_dir
+      Dir.mkdir(File.basename(VCL::CREDENTIALS)) unless 
+        Dir.exist?(File.basename(VCL::CREDENTIALS))
+    end
   end
 end

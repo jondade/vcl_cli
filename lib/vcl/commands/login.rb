@@ -2,7 +2,7 @@ module VCL
   class CLI < Thor
     desc "login", "Logs into the app. Required before doing anything else."
     def login
-      if VCL::Token
+      if VCL::TOKEN
         abort unless yes?("You already have an access token, are you sure you want to authenticate again?")
       end
 
@@ -11,10 +11,11 @@ module VCL
       File.open(VCL::COOKIE_JAR , 'w+') {|f| f.write(JSON.dump(VCL::Cookies)) }
       File.chmod(0600, VCL::COOKIE_JAR)
 
-      say("Creating root scoped token...")
-
       scope = login_results[:user].include?("@fastly.com") ? "root" : "global"
 
+      say("Creating #{scope} scoped token...")
+
+      
       o = {
         user: login_results[:user],
         pass: login_results[:pass],

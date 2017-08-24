@@ -1,2 +1,4 @@
 *.gem
 *.DS_Store
+*.sublime-project
+*.sublime-workspace

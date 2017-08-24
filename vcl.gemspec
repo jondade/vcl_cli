@@ -6,8 +6,8 @@ require 'vcl/version'
 Gem::Specification.new do |spec|
   spec.name          = "vcl"
   spec.version       = VCL::VERSION
-  spec.authors       = ["Stephen Basile"]
-  spec.email         = ["stephen@fastly.com"]
+  spec.authors       = ['Stephen Basile', 'Jonathan Dade']
+  spec.email         = ['stephen@fastly.com', 'jdade@fastly.com']
 
   spec.summary       = %q{CLI tool for interacting with the Fastly API}
   spec.description   = %q{This gem provides a better way to manage configurations.}

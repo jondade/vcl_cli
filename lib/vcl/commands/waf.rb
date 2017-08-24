@@ -32,7 +32,7 @@ module VCL
 
         say("WAF VCL content written to #{filename}")
       else
-        say("WAF is not enabled on this service.")
+        say('WAF is not enabled on this service.')
       end
     end
   end

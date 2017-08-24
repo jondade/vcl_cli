@@ -43,7 +43,9 @@ module VCL
       when "delete"
         id = ask("What is the ID of the token you'd like to delete?")
 
-        VCL::Fetcher.api_request(:delete, "/tokens/#{id}", expected_responses: [204])
+        VCL::Fetcher.api_request(:delete,
+                                 "/tokens/#{id}",
+                                 expected_responses: [204])
         say("Token with id #{id} deleted.")
       else
         abort "#{action} is not a valid command"

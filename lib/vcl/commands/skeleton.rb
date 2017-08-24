@@ -16,7 +16,7 @@ module VCL
         abort
       end
 
-      File.open(filename , 'w+') {|f| f.write(boilerplate) }
+      File.open(filename, 'w+') { |f| f.write(boilerplate) }
 
       say("Boilerplate written to #{filename}.")
     end

@@ -1,27 +1,27 @@
-require "pp"
+require 'pp'
 
-require "vcl/commands/purge_all"
-require "vcl/commands/open"
-require "vcl/commands/download"
-require "vcl/commands/diff"
-require "vcl/commands/waf"
-require "vcl/commands/upload"
-require "vcl/commands/activate"
-require "vcl/commands/skeleton"
-require "vcl/commands/clone"
-require "vcl/commands/move"
-require "vcl/commands/create_service"
-require "vcl/commands/dictionary"
-require "vcl/commands/login"
-require "vcl/commands/watch"
-require "vcl/commands/token"
-require "vcl/commands/domain"
+require 'vcl/commands/purge_all'
+require 'vcl/commands/open'
+require 'vcl/commands/download'
+require 'vcl/commands/diff'
+require 'vcl/commands/waf'
+require 'vcl/commands/upload'
+require 'vcl/commands/activate'
+require 'vcl/commands/skeleton'
+require 'vcl/commands/clone'
+require 'vcl/commands/move'
+require 'vcl/commands/create_service'
+require 'vcl/commands/dictionary'
+require 'vcl/commands/login'
+require 'vcl/commands/watch'
+require 'vcl/commands/token'
+require 'vcl/commands/domain'
 
 module VCL
   class CLI < Thor
     def initialize(a,b,c)
       unless File.exist?(VCL::TOKEN_FILE)
-        if yes?("Unable to locate API token. Would you like to login first?")
+        if yes?('Unable to locate API token. Would you like to login first?')
           self.login
         end
       end
@@ -29,7 +29,7 @@ module VCL
       super
     end
 
-    desc "version", "Displays version of the VCL gem."
+    desc 'version', 'Displays version of the VCL gem.'
     def version
       say("VCL gem version is #{VCL::VERSION}")
     end

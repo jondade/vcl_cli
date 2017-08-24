@@ -76,7 +76,8 @@ module VCL
 
       abort "Compiler reported the following error with the generated VCL: #{validation["msg"]}" if validation["status"] == "error"
 
-      say("VCL(s) have been uploaded to version #{writable_version} and validated.")
+      say("VCL(s) have been uploaded to version #{writable_version}
+          and validated.")
     end
   end
 end

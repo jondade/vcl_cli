@@ -42,7 +42,7 @@ module VCL
         $stdout.flush
         print " #{rps} req/s | #{bw.round(3)}gb/s | #{hit_rate.round(2)}% Hit Ratio | #{passes} passes/s | #{synth} synths/s | #{miss_time}ms miss time | #{errors} errors/s   \r"
 
-        ts = data["Timestamp"]
+        ts = data['Timestamp']
       end
     end
   end
