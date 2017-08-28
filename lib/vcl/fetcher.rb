@@ -1,4 +1,5 @@
 module VCL
+  # Defines the API access methods
   module Fetcher
     def self.api_request(method, path, options={})
       options[:endpoint] ||= :api
@@ -8,24 +9,24 @@ module VCL
       options[:force_session] ||= false
       options[:expected_responses] ||= [200]
 
-      headers = {"Accept" => "application/json", "Connection" => "close", "User-Agent" => "VCL_CLI: https://github.com/stephenbasile/vcl_cli"}
+      headers = { 'Accept' => 'application/json', 'Connection' => 'close', 'User-Agent' => 'VCL_CLI: https://github.com/stephenbasile/vcl_cli'}
 
       if options[:endpoint] == :app
-        headers["Referer"] = VCL::FASTLY_APP
-        headers["X-CSRF-Token"] = VCL::Cookies["fastly.csrf"] if VCL::Cookies["fastly.csrf"]
-        headers["Fastly-API-Request"] = "true"
+        headers['Referer'] = VCL::FASTLY_APP
+        headers['X-CSRF-Token'] = VCL::Cookies['fastly.csrf'] if VCL::Cookies['fastly.csrf']
+        headers['Fastly-API-Request'] = 'true'
       end
 
       if VCL::Token && !options[:force_session]
-        headers["Fastly-Key"] = VCL::Token
+        headers['Fastly-Key'] = VCL::Token
       else
-        headers["Cookie"] = "" if VCL::Cookies.length > 0
+        headers['Cookie'] = '' if VCL::Cookies.length > 0
         VCL::Cookies.each do |k,v|
-          headers["Cookie"] << "#{k}=#{v};"
+          headers['Cookie'] << "#{k}=#{v};"
         end
       end
 
-      headers["Content-Type"] = "application/x-www-form-urlencoded" if (method == :post || method == :put)
+      headers['Content-Type'] = 'application/x-www-form-urlencoded' if (method == :post || method == :put)
 
       headers.merge!(options[:headers]) if options[:headers].count > 0
 
@@ -40,25 +41,25 @@ module VCL
       ).run
 
       if options[:expected_responses].include?(response.response_code)
-        if response.headers["Set-Cookie"]
-          response.headers["Set-Cookie"] = [response.headers["Set-Cookie"]] if response.headers["Set-Cookie"].is_a? String
-          response.headers["Set-Cookie"].each do |c|
+        if response.headers['Set-Cookie']
+          response.headers['Set-Cookie'] = [response.headers['Set-Cookie']] if response.headers['Set-Cookie'].is_a? String
+          response.headers['Set-Cookie'].each do |c|
             name, value = c.match(/^([^=]*)=([^;]*).*/i).captures
             VCL::Cookies[name] = value
           end
         end
       else
         case response.response_code
-          when 400
-            error = "400: Bad API request--got bad request response."
-          when 403
-            error = "403: Access Denied by API. Run login command to authenticate."
-          when 404
-            error = "404: Service does not exist or bad path requested."
-          when 503
-            error = "503: API is offline."
-          else
-            error = "API responded with status #{response.response_code}."
+        when 400
+          error = '400: Bad API request--got bad request response.'
+        when 403
+          error = '403: Access Denied by API. Run login command to authenticate.'
+        when 404
+          error = '404: Service does not exist or bad path requested.'
+        when 503
+          error = '503: API is offline.'
+        else
+          error = "API responded with status #{response.response_code}."
         end
 
         error += " Method: #{method.to_s.upcase}, Path: #{path}\n"
@@ -67,13 +68,13 @@ module VCL
         abort error
       end
 
-      return response.response_body if (response.headers["Content-Type"] != "application/json")
+      return response.response_body if response.headers['Content-Type'] != 'application/json'
 
       if response.response_body.length > 1
         begin
           return JSON.parse(response.response_body)
         rescue JSON::ParserError
-          abort "Failed to parse JSON response from Fastly API"
+          abort 'Failed to parse JSON response from Fastly API'
         end
       else
         return {}
@@ -81,44 +82,42 @@ module VCL
     end
 
     def self.domain_to_service_id(domain)
-      response = Typhoeus::Request.new(VCL::FASTLY_APP, method:"FASTLYSERVICEMATCH", headers: { :host => domain}).run
+      response = Typhoeus::Request.new(VCL::FASTLY_APP, method: 'FASTLYSERVICEMATCH', headers: { host: domain }).run
 
-      abort "Failed to fetch Fastly service ID or service ID does not exist" if response.response_code != 204
+      abort 'Failed to fetch Fastly service ID or service ID does not exist' if response.response_code != 204
 
-      abort "Fastly response did not contain service ID" unless response.headers["Fastly-Service-Id"]
+      abort 'Fastly response did not contain service ID' unless response.headers['Fastly-Service-Id']
 
-      return response.headers["Fastly-Service-Id"]
+      response.headers['Fastly-Service-Id']
     end
 
     def self.get_active_version(id)
-      service = self.api_request(:get, "/service/#{id}")
+      service = api_request(:get, "/service/#{id}")
 
       max = 1
 
-      service["versions"].each do |v|
-        if v["active"] == true
-          return v["number"]
+      service['versions'].each do |v|
+        if v['active'] == true
+          return v['number']
         end
 
-        max = v["number"] if v["number"] > max
+        max = v['number'] if v['number'] > max
       end
 
-      return max
+      max
     end
 
     def self.get_writable_version(id)
-      service = self.api_request(:get, "/service/#{id}")
+      service = api_request(:get, "/service/#{id}")
 
       active = false
       version = false
       max = 1
-      service["versions"].each do |v|
-        if v["active"] == true
-          active = v["number"].to_i
-        end
+      service['versions'].each do |v|
+        active = v['number'].to_i if v['active'] == true
 
-        if active && v["number"].to_i > active && v["locked"] == false
-          version = v["number"]
+        if active && v['number'].to_i > active && v['locked'] == false
+          version = v['number']
         end
 
         max = version if version && version > max
@@ -126,103 +125,102 @@ module VCL
 
       return max unless active
 
-      version = self.api_request(:put, "/service/#{id}/version/#{active}/clone")["number"] unless version
+      version = api_request(:put, "/service/#{id}/version/#{active}/clone")['number'] unless version
 
-      return version
+      version
     end
 
-    def self.get_vcl(id, version, generated=false)
-      if generated
-        vcl = self.api_request(:get, "/service/#{id}/version/#{version}/generated_vcl")
-      else
-        vcl = self.api_request(:get, "/service/#{id}/version/#{version}/vcl?include_content=1")
-      end
-
-      if vcl.length == 0
-        return false
-      else
-        return vcl
-      end
+    def self.get_vcl(id, version, generated = false)
+      url = "/service/#{id}/version/#{version}/"
+      url.concat(generated ? 'generated_vcl' : 'vcl?include_content=1')
+      vcl = api_request(:get, url)
+      vcl.empty? ? false : vcl
     end
 
-    def self.upload_vcl(service,version,content,name,is_main=true,is_new=false)
-      params = { name: name, main: "#{is_main ? "1" : "0"}", content: content }
+    def self.upload_vcl(service, version, content, name, is_main = true, is_new = false)
+      params = { name: name, main: is_main.to_s, content: content }
 
       # try to create, if that fails, update
       if is_new
-        response = VCL::Fetcher.api_request(:post, "/service/#{service}/version/#{version}/vcl", {:endpoint => :api, body: params, expected_responses:[200,409]})
-        if response["msg"] != "Duplicate record"
-          return
-        end
+        response = VCL::Fetcher.api_request(
+          :post,
+          "/service/#{service}/version/#{version}/vcl",
+          { endpoint: :api, body: params, expected_responses: [200, 409] }
+        )
+        return if response['msg'] != 'Duplicate record'
       end
 
-      response = VCL::Fetcher.api_request(:put, "/service/#{service}/version/#{version}/vcl/#{name}", {:endpoint => :api, body: params, expected_responses: [200,404]})
+      response = VCL::Fetcher.api_request(
+        :put,
+        "/service/#{service}/version/#{version}/vcl/#{name}",
+        { endpoint: :api, body: params, expected_responses: [200, 404] }
+      )
 
       # The VCL got deleted so recreate it.
-      if response["msg"] == "Record not found"
-        VCL::Fetcher.api_request(:post, "/service/#{service}/version/#{version}/vcl", {:endpoint => :api, body: params})
+      if response['msg'] == 'Record not found'
+        VCL::Fetcher.api_request(
+          :post,
+          "/service/#{service}/version/#{version}/vcl",
+          { endpoint: :api, body: params }
+        )
       end
     end
 
     def self.login
       thor = Thor::Shell::Basic.new
 
-      user = thor.ask("Username: ")
-      pass = thor.ask("Password: ", :echo => false)
+      params['user'] = thor.ask('Username: ')
+      params['pass'] = thor.ask('Password: ', echo: false)
 
-      resp = VCL::Fetcher.api_request(:post, "/login", { :endpoint => :app, params: { user: user, password: pass}})
+      resp = api_request(:post, '/login', endpoint: :app, params: params)
 
-      if resp["needs_two_factor_auth"]
+      if resp['needs_two_factor_auth']
         two_factor = true
 
         thor.say("\nTwo factor auth enabled on account, second factor needed.")
-        code = thor.ask('Please enter verification code:', echo: false)
+        code = thor.ask('Please enter verification code:')
 
-        resp = VCL::Fetcher.api_request(:post, "/two_factor_auth/verify", {force_session: true, :endpoint => :app, params: { token: code }} )
+        api_request(
+          :post, '/two_factor_auth/verify', force_session: true,
+          endpoint: :app, params: { token: code }
+        )
       else
-        thor.say("\nTwo factor auth is NOT enabled. You should go do that immediately.")
+        thor.say("\nTwo factor auth is NOT enabled."\
+                 ' You should go do that immediately.')
       end
 
-      thor.say("Login successful!")
+      thor.say('Login successful!')
 
-      return { user: user, pass: pass, two_factor: two_factor, code: code }
+      { user: user, pass: pass, two_factor: two_factor, code: code }
     end
 
     def self.create_token(options)
       thor = Thor::Shell::Basic.new
-
       headers = {}
-      headers["Fastly-OTP"] = options[:code] if options[:code]
+      headers['Fastly-OTP'] = options[:code] if options[:code]
 
-      VCL::Fetcher.api_request(:post, "/sudo", {
+      VCL::Fetcher.api_request(
+        :post, '/sudo',
         force_session: true,
         endpoint: :api,
-        params: {
-          user: options[:user],
-          password: options[:pass]
-        },
+        params: { user: options[:user], password: options[:pass] },
         headers: headers
-      })
-
+      )
       params = {
-          name: options[:name],
-          scope: options[:scope],
-          user: options[:user],
-          password: options[:pass]
+        name: options[:name], scope: options[:scope],
+        user: options[:user], password: options[:pass]
       }
-
       params[:services] = options[:services] if options[:services]
-
-      resp = VCL::Fetcher.api_request(:post, "/tokens", {
+      resp = VCL::Fetcher.api_request(
+        :post,
+        '/tokens',
         force_session: true,
         endpoint: :api,
         params: params,
         headers: headers
-      })
-
-      thor.say("\n#{resp["id"]} created.")
-
-      return resp
+      )
+      thor.say("\n#{resp['id']} created.")
+      resp
     end
   end
 end

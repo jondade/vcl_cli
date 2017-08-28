@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 
-require "bundler/setup"
-require "vcl"
+require 'bundler/setup'
+require 'vcl'
 
 VCL::CLI.start(ARGV)

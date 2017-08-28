@@ -24,7 +24,7 @@ module VCL
   TANGO_PATH = '/configure/services/'.freeze
 
   if File.exist?(VCL::CREDENTIALS)
-    YAML.load(File.read(VCL::CREDENTIALS))
+    YAML.safe_load(File.read(VCL::CREDENTIALS))
   else
     Cookies = File.exist?(COOKIE_JAR) ? JSON.parse(File.read(COOKIE_JAR)) : {}
     Token = File.exist?(VCL::TOKEN_FILE) ? File.read(VCL::TOKEN_FILE) : false
